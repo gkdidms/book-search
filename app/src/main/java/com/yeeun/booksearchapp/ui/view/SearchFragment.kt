@@ -1,60 +1,88 @@
 package com.yeeun.booksearchapp.ui.view
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.yeeun.booksearchapp.R
+import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.yeeun.booksearchapp.databinding.FragmentSearchBinding
+import com.yeeun.booksearchapp.ui.adapter.BookSearchAdapter
+import com.yeeun.booksearchapp.ui.viewmodel.BookSearchViewModel
+import com.yeeun.booksearchapp.util.Constants.SEARCH_BOOKS_TIME_DELAY
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [SearchFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class SearchFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentSearchBinding? = null
+    private val binding get() = _binding!!
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private lateinit var bookSearchViewModel: BookSearchViewModel
+    private lateinit var bookSearchAdapter: BookSearchAdapter
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentSearchBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        bookSearchViewModel = (activity as MainActivity).bookSearchViewModel
+
+        setupRecyclerView()
+        searchBooks()
+
+        bookSearchViewModel.searchResult.observe(viewLifecycleOwner) { response ->
+            val books = response.documents
+            bookSearchAdapter.submitList(books)
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false)
+    private fun setupRecyclerView() {
+        bookSearchAdapter = BookSearchAdapter()
+        binding.rvSearchResult.apply {
+            setHasFixedSize(true)
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            addItemDecoration(
+                DividerItemDecoration(
+                    requireContext(),
+                    DividerItemDecoration.VERTICAL
+                )
+            )
+            adapter = bookSearchAdapter
+        }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment SearchFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SearchFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun searchBooks() {
+        var startTime = System.currentTimeMillis()
+        var endTime: Long
+
+        binding.etSearch.text =
+            Editable.Factory.getInstance().newEditable(bookSearchViewModel.query)
+
+        binding.etSearch.addTextChangedListener { text: Editable? ->
+            endTime = System.currentTimeMillis()
+            if (endTime - startTime >= SEARCH_BOOKS_TIME_DELAY) {
+                text?.let {
+                    val query = it.toString().trim()
+                    if (query.isNotEmpty()) {
+                        bookSearchViewModel.searchBooks(query)
+                        bookSearchViewModel.query = query
+                    }
                 }
             }
+            startTime = endTime
+        }
+
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 }
