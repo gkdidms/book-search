@@ -5,22 +5,28 @@ import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.yeeun.booksearchapp.databinding.FragmentSearchBinding
-import com.yeeun.booksearchapp.ui.adapter.BookSearchAdapter
+import com.yeeun.booksearchapp.ui.adapter.BookSearchLoadStateAdapter
+import com.yeeun.booksearchapp.ui.adapter.BookSearchPagingAdapter
 import com.yeeun.booksearchapp.ui.viewmodel.BookSearchViewModel
 import com.yeeun.booksearchapp.util.Constants.SEARCH_BOOKS_TIME_DELAY
+import com.yeeun.booksearchapp.util.collectLatestStateFlow
 
 class SearchFragment : Fragment() {
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var bookSearchViewModel: BookSearchViewModel
-    private lateinit var bookSearchAdapter: BookSearchAdapter
+
+    //    private lateinit var bookSearchAdapter: BookSearchAdapter
+    private lateinit var bookSearchAdapter: BookSearchPagingAdapter
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,15 +42,21 @@ class SearchFragment : Fragment() {
 
         setupRecyclerView()
         searchBooks()
+        setupLoadState()
 
-        bookSearchViewModel.searchResult.observe(viewLifecycleOwner) { response ->
-            val books = response.documents
-            bookSearchAdapter.submitList(books)
+//        bookSearchViewModel.searchResult.observe(viewLifecycleOwner) { response ->
+//            val books = response.documents
+//            bookSearchAdapter.submitList(books)
+//        }
+
+        collectLatestStateFlow(bookSearchViewModel.searchPagingResult) {
+            bookSearchAdapter.submitData(it)
         }
     }
 
     private fun setupRecyclerView() {
-        bookSearchAdapter = BookSearchAdapter()
+//        bookSearchAdapter = BookSearchAdapter()
+        bookSearchAdapter = BookSearchPagingAdapter()
         binding.rvSearchResult.apply {
             setHasFixedSize(true)
             layoutManager =
@@ -55,7 +67,10 @@ class SearchFragment : Fragment() {
                     DividerItemDecoration.VERTICAL
                 )
             )
-            adapter = bookSearchAdapter
+//            adapter = bookSearchAdapter
+            adapter = bookSearchAdapter.withLoadStateFooter(
+                footer = BookSearchLoadStateAdapter(bookSearchAdapter::retry)
+            )
         }
 
         bookSearchAdapter.setOnItemClickListener {
@@ -77,14 +92,37 @@ class SearchFragment : Fragment() {
                 text?.let {
                     val query = it.toString().trim()
                     if (query.isNotEmpty()) {
-                        bookSearchViewModel.searchBooks(query)
+                        //bookSearchViewModel.searchBooks(query)
+                        bookSearchViewModel.searchBooksPaging(query)
                         bookSearchViewModel.query = query
                     }
                 }
             }
             startTime = endTime
         }
+    }
 
+    private fun setupLoadState() {
+        bookSearchAdapter.addLoadStateListener { combinedLoadStates -> //페이징 소스와 미디트어쩌구 소스
+            val loadState = combinedLoadStates.source
+            val isListEmpty = bookSearchAdapter.itemCount < 1
+                    && loadState.refresh is LoadState.NotLoading
+                    && loadState.append.endOfPaginationReached
+
+            binding.tvEmptylist.isVisible = isListEmpty
+            binding.rvSearchResult.isVisible = !isListEmpty
+
+            binding.progressBar.isVisible = loadState.refresh is LoadState.Loading
+//            binding.btnRetry.isVisible = loadState.refresh is LoadState.Error
+//                    || loadState.append is LoadState.Error
+//                    || loadState.prepend is LoadState.Error
+//            val errorState: LoadState.Error? = loadState.append as? LoadState.Error
+//                ?: loadState.prepend as? LoadState.Error
+//                ?: loadState.refresh as? LoadState.Error
+//            errorState?.let {
+//                Toast.makeText(requireContext(), it.error.message, Toast.LENGTH_SHORT).show()
+//            }
+        }
     }
 
     override fun onDestroyView() {

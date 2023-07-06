@@ -1,5 +1,6 @@
 package com.yeeun.booksearchapp.data.repository
 
+import androidx.paging.PagingData
 import com.yeeun.booksearchapp.data.model.Book
 import com.yeeun.booksearchapp.data.model.SearchResponse
 import kotlinx.coroutines.flow.Flow
@@ -25,5 +26,10 @@ interface BookSearchRepository {
     suspend fun saveSortMode(mode: String)
 
     suspend fun getSortMode(): Flow<String>
+
+    //paging
+    fun getFavoritePagingBooks(): Flow<PagingData<Book>>
+
+    fun searchBooksPaging(query: String, sort: String): Flow<PagingData<Book>>
 
 }
