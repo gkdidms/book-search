@@ -5,6 +5,9 @@ import com.yeeun.booksearchapp.data.model.Book
 import com.yeeun.booksearchapp.data.model.SearchResponse
 import com.yeeun.booksearchapp.data.repository.BookSearchRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class BookSearchViewModel(
@@ -29,12 +32,14 @@ class BookSearchViewModel(
     fun saveBook(book: Book) = viewModelScope.launch(Dispatchers.IO) {
         bookSearchRepository.insertBooks(book)
     }
-    
+
     fun deleteBook(book: Book) = viewModelScope.launch(Dispatchers.IO) {
         bookSearchRepository.deleteBooks(book)
     }
 
-    var favoriteBook: LiveData<List<Book>> = bookSearchRepository.getFavoriteBooks()
+    /*var favoriteBook: Flow<List<Book>> = bookSearchRepository.getFavoriteBooks()*/
+    val favoriteBooks: StateFlow<List<Book>> = bookSearchRepository.getFavoriteBooks()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     //SavedState
     var query = String()
