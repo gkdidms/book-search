@@ -1,8 +1,6 @@
 package com.yeeun.booksearchapp.data.db
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.yeeun.booksearchapp.data.model.Book
@@ -20,7 +18,7 @@ abstract class BookSearchDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: BookSearchDatabase? = null
 
-        private fun buildDatabase(context: Context): BookSearchDatabase =
+/*        private fun buildDatabase(context: Context): BookSearchDatabase =
             Room.databaseBuilder(
                 context.applicationContext,
                 BookSearchDatabase::class.java,
@@ -31,5 +29,6 @@ abstract class BookSearchDatabase : RoomDatabase() {
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
             }
+    }*/
     }
 }

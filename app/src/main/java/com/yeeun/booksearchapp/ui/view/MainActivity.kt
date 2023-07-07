@@ -1,36 +1,29 @@
 package com.yeeun.booksearchapp.ui.view
 
-import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.work.WorkManager
 import com.yeeun.booksearchapp.R
-import com.yeeun.booksearchapp.data.db.BookSearchDatabase
-import com.yeeun.booksearchapp.data.repository.BookSearchRepositoryImpl
 import com.yeeun.booksearchapp.databinding.ActivityMainBinding
-import com.yeeun.booksearchapp.ui.viewmodel.BookSearchViewModel
-import com.yeeun.booksearchapp.ui.viewmodel.BookSearchViewModelProviderFactory
-import com.yeeun.booksearchapp.util.Constants.DATASTORE_NAME
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val binding: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    lateinit var bookSearchViewModel: BookSearchViewModel
+    //    lateinit var bookSearchViewModel: BookSearchViewModel
     lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
 
-    private val Context.dataStore by preferencesDataStore(DATASTORE_NAME)
-    private val workManager = WorkManager.getInstance(applicationContext)
+//    private val Context.dataStore by preferencesDataStore(DATASTORE_NAME)
+//    private val workManager = WorkManager.getInstance(applicationContext)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,10 +35,10 @@ class MainActivity : AppCompatActivity() {
         }*/
         setupJetpackNavigation()
 
-        val database = BookSearchDatabase.getInstance(this)
-        val bookSearchRepository = BookSearchRepositoryImpl(database, dataStore)
-        val factory = BookSearchViewModelProviderFactory(bookSearchRepository, workManager, this)
-        bookSearchViewModel = ViewModelProvider(this, factory)[BookSearchViewModel::class.java]
+//        val database = BookSearchDatabase.getInstance(this)
+//        val bookSearchRepository = BookSearchRepositoryImpl(database, dataStore)
+//        val factory = BookSearchViewModelProviderFactory(bookSearchRepository, workManager, this)
+//        bookSearchViewModel = ViewModelProvider(this, factory)[BookSearchViewModel::class.java]
     }
 
     private fun setupJetpackNavigation() {

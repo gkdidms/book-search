@@ -2,13 +2,14 @@ package com.yeeun.booksearchapp.data.repository
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.yeeun.booksearchapp.data.api.RetrofitInterface.api
+import com.yeeun.booksearchapp.data.api.BookSearchApi
 import com.yeeun.booksearchapp.data.model.Book
 import com.yeeun.booksearchapp.util.Constants.PAGING_SIZE
 import retrofit2.HttpException
 import java.io.IOException
 
 class BookSearchPagingSource(
+    private val api: BookSearchApi,
     private val query: String,
     private val sort: String
 ) : PagingSource<Int, Book>() {
