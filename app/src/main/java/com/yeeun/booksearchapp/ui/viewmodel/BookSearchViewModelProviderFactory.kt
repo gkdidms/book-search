@@ -5,6 +5,7 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
+import androidx.work.WorkManager
 import com.yeeun.booksearchapp.data.repository.BookSearchRepository
 
 @Suppress("UNCHECKED_CAST")
@@ -21,6 +22,7 @@ class BookSearchViewModelProviderFactory(private val bookSearchRepository: BookS
 
 class BookSearchViewModelProviderFactory(
     private val bookSearchRepository: BookSearchRepository,
+    private val workManager: WorkManager,
     owner: SavedStateRegistryOwner,
     defaultArgs: Bundle? = null
 ) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
@@ -30,7 +32,7 @@ class BookSearchViewModelProviderFactory(
         handle: SavedStateHandle
     ): T {
         if (modelClass.isAssignableFrom(BookSearchViewModel::class.java)) {
-            return BookSearchViewModel(bookSearchRepository, handle) as T
+            return BookSearchViewModel(bookSearchRepository, workManager, handle) as T
         }
         throw IllegalAccessException("ViewModel class not found")
     }

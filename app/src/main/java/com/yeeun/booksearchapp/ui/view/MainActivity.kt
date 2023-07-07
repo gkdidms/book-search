@@ -11,6 +11,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.work.WorkManager
 import com.yeeun.booksearchapp.R
 import com.yeeun.booksearchapp.data.db.BookSearchDatabase
 import com.yeeun.booksearchapp.data.repository.BookSearchRepositoryImpl
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     private val Context.dataStore by preferencesDataStore(DATASTORE_NAME)
+    private val workManager = WorkManager.getInstance(applicationContext)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         val database = BookSearchDatabase.getInstance(this)
         val bookSearchRepository = BookSearchRepositoryImpl(database, dataStore)
-        val factory = BookSearchViewModelProviderFactory(bookSearchRepository, this)
+        val factory = BookSearchViewModelProviderFactory(bookSearchRepository, workManager, this)
         bookSearchViewModel = ViewModelProvider(this, factory)[BookSearchViewModel::class.java]
     }
 
